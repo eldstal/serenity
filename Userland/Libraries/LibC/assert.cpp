@@ -28,13 +28,31 @@ void __assertion_failed(const char* msg)
         { msg, strlen(msg) },
     };
     syscall(SC_set_coredump_metadata, &params);
+
+#ifdef ASSERT_IS_EXIT
+    //This way, the fuzzer doesn't interpret assertion failures as a crash.
+    if (__stdio_is_initialized)
+        warnln("Debeaked assert().");
+    exit(0);
+#else
     abort();
+#endif
+
 }
 #endif
 }
 
 void _abort()
 {
+
+#ifdef ASSERT_IS_EXIT
+    //This way, the fuzzer doesn't interpret assertion failures as a crash.
+    if (__stdio_is_initialized)
+        warnln("Debeaked abort().");
+    exit(0);
+#else
+
     asm volatile("ud2");
     __builtin_unreachable();
+#endif
 }

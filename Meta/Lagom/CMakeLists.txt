@@ -25,6 +25,7 @@ endif()
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
     # Clang's default constexpr-steps limit is 1048576(2^20), GCC doesn't have one
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual -Wno-user-defined-literals -fconstexpr-steps=16777216")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASSERT_IS_EXIT")
 
     if (ENABLE_FUZZER_SANITIZER)
         add_definitions(-fsanitize=fuzzer -fno-omit-frame-pointer)

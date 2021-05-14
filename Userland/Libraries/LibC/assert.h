@@ -10,6 +10,8 @@
 
 __BEGIN_DECLS
 
+#define BENIGN_ASSERT(cond) if (!(cond)){_exit(0);}
+
 #ifdef DEBUG
 [[noreturn]] void __assertion_failed(const char* msg);
 #    define __stringify_helper(x) #    x
@@ -19,7 +21,11 @@ __BEGIN_DECLS
             if (__builtin_expect(!(expr), 0))                                      \
                 __assertion_failed(#expr "\n" __FILE__ ":" __stringify(__LINE__)); \
         } while (0)
-#    define VERIFY_NOT_REACHED() assert(false)
+#    ifdef ASSERT_IS_EXIT
+#        define VERIFY_NOT_REACHED() _exit(0)
+#    else
+#        define VERIFY_NOT_REACHED() assert(false)
+#    endif
 #else
 #    define assert(expr) ((void)(0))
 #    define VERIFY_NOT_REACHED() _abort()
@@ -27,7 +33,11 @@ __BEGIN_DECLS
 
 [[noreturn]] void _abort();
 
-#define VERIFY assert
+#ifdef ASSERT_IS_EXIT
+#    define VERIFY BENIGN_ASSERT
+#else
+#    define VERIFY assert
+#endif
 #define TODO VERIFY_NOT_REACHED
 
 #ifndef __cplusplus

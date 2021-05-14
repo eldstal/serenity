@@ -11,8 +11,15 @@
 #else
 #    include <assert.h>
 #    ifndef __serenity__
-#        define VERIFY assert
-#        define VERIFY_NOT_REACHED() assert(false)
-#        define TODO VERIFY_NOT_REACHED
+#        ifdef ASSERT_IS_EXIT
+#include <stdlib.h>
+#            define VERIFY(cond) if(!(cond)){exit(0);}
+#            define VERIFY_NOT_REACHED() exit(0)
+#            define TODO VERIFY_NOT_REACHED
+#        else
+#            define VERIFY assert
+#            define VERIFY_NOT_REACHED() assert(false)
+#            define TODO VERIFY_NOT_REACHED
+#        endif
 #    endif
 #endif

@@ -231,6 +231,46 @@ set(GENERATED_SOURCES
     ../../Services/WebContent/WebContentServerEndpoint.h
 )
 
+if (NOT ENABLE_OSS_FUZZ)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option -Wno-literal-suffix -O2 -Wall -Wextra -std=c++2a -fPIC -g -Wno-deprecated-copy")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fPIC -g -Wno-deprecated-copy")
+endif()
+
+
+if (ENABLE_ADDRESS_SANITIZER)
+    add_definitions(-fsanitize=address -fno-omit-frame-pointer)
+    set(LINKER_FLAGS "${LINKER_FLAGS} -fsanitize=address")
+endif()
+
+if (ENABLE_MEMORY_SANITIZER)
+    add_definitions(-fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer)
+    set(LINKER_FLAGS "${LINKER_FLAGS} -fsanitize=memory -fsanitize-memory-track-origins")
+endif()
+
+if (ENABLE_UNDEFINED_SANITIZER)
+    add_definitions(-fsanitize=undefined -fno-sanitize=vptr -fno-omit-frame-pointer)
+    set(LINKER_FLAGS "${LINKER_FLAGS} -fsanitize=undefined -fno-sanitize=vptr")
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
+    # Clang's default constexpr-steps limit is 1048576(2^20), GCC doesn't have one
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual -Wno-user-defined-literals -fconstexpr-steps=16777216")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASSERT_IS_EXIT")
+
+    set(ORIGINAL_CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    set(ORIGINAL_CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    set(ORIGINAL_CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINKER_FLAGS}")
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-expansion-to-defined -Wno-literal-suffix")
+endif()
+
+
 set_property(GLOBAL PROPERTY wrapper_sources)
 function(add_wrapper_sources)
     get_property(tmp GLOBAL PROPERTY wrapper_sources)
@@ -289,12 +329,18 @@ function(libweb_js_wrapper class)
         DEPENDS WrapperGenerator
         MAIN_DEPENDENCY ${class}.idl
     )
-    add_custom_target(generate_${basename}Wrapper.h DEPENDS Bindings/${class}Wrapper.h)
-    add_custom_target(generate_${basename}Wrapper.cpp DEPENDS Bindings/${class}Wrapper.cpp)
-    add_custom_target(generate_${basename}Constructor.h DEPENDS Bindings/${class}Constructor.h)
-    add_custom_target(generate_${basename}Constructor.cpp DEPENDS Bindings/${class}Constructor.cpp)
-    add_custom_target(generate_${basename}Prototype.h DEPENDS Bindings/${class}Prototype.h)
-    add_custom_target(generate_${basename}Prototype.cpp DEPENDS Bindings/${class}Prototype.cpp)
+    #add_custom_target(generate_${basename}Wrapper.h DEPENDS Bindings/${class}Wrapper.h)
+    #add_custom_target(generate_${basename}Wrapper.cpp DEPENDS Bindings/${class}Wrapper.cpp)
+    #add_custom_target(generate_${basename}Constructor.h DEPENDS Bindings/${class}Constructor.h)
+    #add_custom_target(generate_${basename}Constructor.cpp DEPENDS Bindings/${class}Constructor.cpp)
+    #add_custom_target(generate_${basename}Prototype.h DEPENDS Bindings/${class}Prototype.h)
+    #add_custom_target(generate_${basename}Prototype.cpp DEPENDS Bindings/${class}Prototype.cpp)
+    add_custom_target(generate_${basename}Wrapper.h DEPENDS Bindings/${basename}Wrapper.h)
+    add_custom_target(generate_${basename}Wrapper.cpp DEPENDS Bindings/${basename}Wrapper.cpp)
+    add_custom_target(generate_${basename}Constructor.h DEPENDS Bindings/${basename}Constructor.h)
+    add_custom_target(generate_${basename}Constructor.cpp DEPENDS Bindings/${basename}Constructor.cpp)
+    add_custom_target(generate_${basename}Prototype.h DEPENDS Bindings/${basename}Prototype.h)
+    add_custom_target(generate_${basename}Prototype.cpp DEPENDS Bindings/${basename}Prototype.cpp)
 endfunction()
 
 libweb_js_wrapper(CSS/CSSStyleDeclaration)

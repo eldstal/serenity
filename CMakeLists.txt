@@ -167,7 +167,7 @@ add_compile_options(-fdiagnostics-color=always)
 if (NOT ${CMAKE_HOST_SYSTEM_NAME} MATCHES SerenityOS)
     # FIXME: Something makes this go crazy and flag unused variables that aren't flagged as such when building with the toolchain.
     #        Disable -Werror for now.
-    add_compile_options(-Werror)
+    #add_compile_options(-Werror)
 endif()
 
 add_compile_options(-Wall)

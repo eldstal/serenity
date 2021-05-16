@@ -10,7 +10,12 @@
 
 __BEGIN_DECLS
 
-#define BENIGN_ASSERT(cond) if (!(cond)){_exit(0);}
+#ifdef ASSERT_IS_EXIT
+#    include "AK/Assertions.h"
+#    define BENIGN_ASSERT(cond) if (!(cond)){_exit(0);}
+#else
+#    define BENIGN_ASSERT(cond) assert((cond))
+#endif
 
 #ifdef DEBUG
 [[noreturn]] void __assertion_failed(const char* msg);

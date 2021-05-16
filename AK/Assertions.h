@@ -12,9 +12,15 @@
 #    include <assert.h>
 #    ifndef __serenity__
 #        ifdef ASSERT_IS_EXIT
-#include <stdlib.h>
-#            define VERIFY(cond) if(!(cond)){exit(0);}
-#            define VERIFY_NOT_REACHED() exit(0)
+             extern "C" {
+               extern int puts(const char*);
+             }
+#            define __stringify_helper(x) #    x
+#            define __stringify(x) __stringify_helper(x)
+#            define VERIFY(cond) if(!(cond)){puts("Assertion " __FILE__ ":" __stringify(__LINE__) " failed: " #cond ". This is not an eligible crash.\n");}
+//#            define VERIFY(cond) if(!(cond)){puts("Assertion " __FILE__ ":" __stringify(__LINE__) " failed.\n");}
+#            define VERIFY(cond) if(!(cond)){;}
+#            define VERIFY_NOT_REACHED() VERIFY(false)
 #            define TODO VERIFY_NOT_REACHED
 #        else
 #            define VERIFY assert

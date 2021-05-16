@@ -22,6 +22,7 @@ option(ENABLE_KERNEL_ADDRESS_SANITIZER "Enable kernel address sanitizer testing 
 option(ENABLE_MEMORY_SANITIZER "Enable memory sanitizer testing in gcc/clang" OFF)
 option(ENABLE_UNDEFINED_SANITIZER "Enable undefined behavior sanitizer testing in gcc/clang" OFF)
 option(ENABLE_FUZZER_SANITIZER "Enable fuzzer sanitizer testing in clang" OFF)
+option(ENABLE_FUZZ_BINARIES "Build fuzzing binaries without special clang support" OFF)
 option(ENABLE_ALL_THE_DEBUG_MACROS "Enable all debug macros to validate they still compile" OFF)
 option(ENABLE_COMPILETIME_FORMAT_CHECK "Enable compiletime format string checks" ON)
 option(ENABLE_PCI_IDS_DOWNLOAD "Enable download of the pci.ids database at build time" ON)

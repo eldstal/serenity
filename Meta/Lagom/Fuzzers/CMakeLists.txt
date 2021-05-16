@@ -1,16 +1,35 @@
 function(add_simple_fuzzer name)
   add_executable(${name} "${name}.cpp")
 
+  set(FUZZER_ARGS "")
+  if (ENABLE_FUZZER_SANITIZER)
+    set(FUZZER_ARGS "-fsanitize=fuzzer")
+  else()
+    # If we're not using the LLVM fuzzer lib, use this main() instead
+    target_sources(${name} PRIVATE "fuzz_main.cpp")
+  endif()
+
   if (ENABLE_OSS_FUZZ)
       target_link_libraries(${name}
           PUBLIC Lagom)
   else()
     target_compile_options(${name}
-      PRIVATE $<$<CXX_COMPILER_ID:Clang>:-g -O1 -fsanitize=fuzzer>
+      PRIVATE $<$<CXX_COMPILER_ID:Clang>:-g -O1 ${FUZZER_ARGS}>
       )
+
+    target_compile_options(${name}
+      PRIVATE $<$<CXX_COMPILER_ID:Gcc>:-g -O1>
+      )
+
+
     target_link_libraries(${name}
       PUBLIC Lagom
-      PRIVATE $<$<CXX_COMPILER_ID:Clang>:-fsanitize=fuzzer>
+      PRIVATE $<$<CXX_COMPILER_ID:Clang>:${FUZZER_ARGS}>
+      )
+
+    target_link_libraries(${name}
+      PUBLIC Lagom
+      PRIVATE $<$<CXX_COMPILER_ID:GNU>:-lpthread>
       )
   endif()
 endfunction()
@@ -51,12 +70,12 @@ if (NOT ENABLE_OSS_FUZZ)
 set(CMAKE_EXE_LINKER_FLAGS "${ORIGINAL_CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 set(CMAKE_SHARED_LINKER_FLAGS "${ORIGINAL_CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
 set(CMAKE_MODULE_LINKER_FLAGS "${ORIGINAL_CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
-add_executable(FuzzilliJs FuzzilliJs.cpp)
-target_compile_options(FuzzilliJs
-    PRIVATE $<$<CXX_COMPILER_ID:Clang>:-g -O1 -fsanitize-coverage=trace-pc-guard>
-    )
-target_link_libraries(FuzzilliJs
-    PUBLIC Lagom
-    PRIVATE $<$<CXX_COMPILER_ID:Clang>:-fsanitize-coverage=trace-pc-guard>
-    )
+#add_executable(FuzzilliJs FuzzilliJs.cpp)
+#target_compile_options(FuzzilliJs
+#    PRIVATE $<$<CXX_COMPILER_ID:Clang>:-g -O1 -fsanitize-coverage=trace-pc-guard>
+#    )
+#target_link_libraries(FuzzilliJs
+#    PUBLIC Lagom
+#    PRIVATE $<$<CXX_COMPILER_ID:Clang>:-fsanitize-coverage=trace-pc-guard>
+#    )
 endif()

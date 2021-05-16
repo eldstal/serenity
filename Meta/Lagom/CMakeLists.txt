@@ -34,6 +34,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-expansion-to-defined -Wno-literal-suffix")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASSERT_IS_EXIT")
 endif()
 
 # These are here to support Fuzzili builds further down the directory stack
@@ -235,6 +236,6 @@ if (BUILD_LAGOM)
     endif()
 endif()
 
-if (ENABLE_FUZZER_SANITIZER OR ENABLE_OSS_FUZZ)
+if (ENABLE_FUZZ_BINARIES OR ENABLE_FUZZER_SANITIZER OR ENABLE_OSS_FUZZ)
     add_subdirectory(Fuzzers)
 endif()

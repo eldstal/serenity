@@ -11,7 +11,9 @@
 __BEGIN_DECLS
 
 #ifdef ASSERT_IS_EXIT
-#    include "AK/Assertions.h"
+extern "C" {
+   void _exit(int);
+}
 #    define BENIGN_ASSERT(cond) if (!(cond)){_exit(0);}
 #else
 #    define BENIGN_ASSERT(cond) assert((cond))
@@ -21,14 +23,15 @@ __BEGIN_DECLS
 [[noreturn]] void __assertion_failed(const char* msg);
 #    define __stringify_helper(x) #    x
 #    define __stringify(x) __stringify_helper(x)
+#    ifdef ASSERT_IS_EXIT
+#        define assert(cond) BENIGN_ASSERT(cond)
+#        define VERIFY_NOT_REACHED() _exit(0)
+#    else
 #    define assert(expr)                                                           \
         do {                                                                       \
             if (__builtin_expect(!(expr), 0))                                      \
                 __assertion_failed(#expr "\n" __FILE__ ":" __stringify(__LINE__)); \
         } while (0)
-#    ifdef ASSERT_IS_EXIT
-#        define VERIFY_NOT_REACHED() _exit(0)
-#    else
 #        define VERIFY_NOT_REACHED() assert(false)
 #    endif
 #else
